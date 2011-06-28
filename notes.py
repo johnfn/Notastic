@@ -9,6 +9,19 @@ import pickle
 
 DIR = "/home/grant/notes/"
 
+def inspect(obj):
+  """Inspects an object. Prints out all internal properties. Not recursive."""
+  for fn_string in dir(obj):
+    sub_obj = getattr(obj, fn_string)
+    obj_type = ""
+
+    if hasattr(sub_obj, '__call__'):
+      obj_type = "function"
+      print "function %s" % sub_obj.__name__
+      print sub_obj.__doc__
+    else:
+      print "%s = %s" % (fn_string, sub_obj)
+
 class Internal:
   """ Internal class to Settings. """
 
@@ -35,6 +48,10 @@ class Settings:
 
   def get_file(self):
     return self.internal.current_file
+
+  # TODO: Maybe this should also load the file in?
+  def set_file(self, file_name):
+    self.internal.current_file = file_name
 
   def save(self):
     """ Save the settings. """
@@ -64,7 +81,14 @@ class Notes:
     self.txtfr(frame)
     self.text.focus_set()
 
+    self.load_file(self.settings.get_file())
+
+  def load_file(self, file_name):
+    self.settings.set_file(file_name)
+    self.text.delete(0.0, END)
     self.text.insert(END, self.settings.get_text())
+    self.set_title(file_name)
+
 
   # Shows the textbox prompt.
   def prompt_user(self):
@@ -76,9 +100,9 @@ class Notes:
     return self.text.get(1.0, END)
 
   def set_title(self, new_title):
-    self.root.wm_title(new_title)
+    self.root.wm_title("Notatistic - %s" % new_title)
 
-  def save_content(self):
+  def save_note(self):
     file_path = DIR + self.settings.get_file()
     if not os.path.exists(file_path):
       os.remove(file_path)
@@ -89,16 +113,20 @@ class Notes:
 	
   def change_text(self, event):
     key = -1
+    
+    print inspect(event)
 
     if len(event.char) > 0:
       key = ord(event.char)
 
+    print key
     if key == 6: # C-F
       self.prompt_user()
-    #elif key == C-X...
-
+    elif key == 17: # C-Q
+      self.close_event()
+      self.root.destroy() #TODO: Put elsewhere.
     else:
-      self.save_content()
+      self.save_note()
 
     """
     print event
@@ -109,6 +137,7 @@ class Notes:
 
   def close_event(self):
     self.settings.save()
+    self.save_note()
     print "Closing."
 
   def txtfr(self, frame):
