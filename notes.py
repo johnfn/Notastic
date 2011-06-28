@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 # TODO C-X quit
+# TODO Display current note in titlebar
 
 from Tkinter import *
 import os.path
@@ -30,7 +31,7 @@ class Settings:
     self.internal.all_files.append(file_name)
 
   def get_text(self):
-    return "\n".join([line for line in open(DIR + self.internal.current_file)])
+    return "\n".join([line[:-1] for line in open(DIR + self.internal.current_file)])
 
   def get_file(self):
     return self.internal.current_file
@@ -55,6 +56,7 @@ class Notes:
 
   def __init__(self, root):
     self.settings = Settings()
+    self.root = root
 
     frame=Frame(root)
     frame.pack()
@@ -73,14 +75,17 @@ class Notes:
   def get_text(self):
     return self.text.get(1.0, END)
 
+  def set_title(self, new_title):
+    self.root.wm_title(new_title)
+
   def save_content(self):
     file_path = DIR + self.settings.get_file()
     if not os.path.exists(file_path):
       os.remove(file_path)
 
     file_data = open(file_path, 'w')
-    file_data.writelines(self.get_text())
-    root.wm_title("herrp")
+    print self.get_text()
+    file_data.write(self.get_text())
 	
   def change_text(self, event):
     key = -1
@@ -90,6 +95,8 @@ class Notes:
 
     if key == 6: # C-F
       self.prompt_user()
+    #elif key == C-X...
+
     else:
       self.save_content()
 
@@ -130,7 +137,6 @@ def main():
     s.close_event()
     root.quit()
 
-  root.title('textarea')
   root.protocol("WM_DELETE_WINDOW", call_close)
   root.mainloop()
 main()
