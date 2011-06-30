@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# TODO C-X quit
-# TODO Display current note in titlebar
+# TODO: Start at top of file, not bottom. 
+# NICE: display of current stack
 
 from Tkinter import *
 import os.path
@@ -18,7 +18,7 @@ def inspect(obj):
     if hasattr(sub_obj, '__call__'):
       obj_type = "function"
       print "function %s" % sub_obj.__name__
-      print sub_obj.__doc__
+      print "\t %s" % str(sub_obj.__doc__).replace("        ", " " * 14)
     else:
       print "%s = %s" % (fn_string, sub_obj)
 
@@ -28,6 +28,7 @@ class Internal:
   def __init__(self):
     self.current_file = "main"
     self.all_files = ["main"]
+    self.heirarchy = ""
 
 class Settings:
   """ State is kept between different sessions by pickling/unpickling the 
@@ -43,8 +44,12 @@ class Settings:
     print "loading %s" % file_name
     self.internal.all_files.append(file_name)
 
-  def get_text(self):
-    return "\n".join([line[:-1] for line in open(DIR + self.internal.current_file)])
+  def get_file_data(self):
+    file_name = DIR + self.internal.current_file
+    if not os.path.exists(file_name):
+      open(file_name, "w").close() # Make an empty file
+
+    return "\n".join([line[:-1] for line in open(file_name, 'rw')])
 
   def get_file(self):
     return self.internal.current_file
@@ -70,6 +75,7 @@ class Modes:
 
 class Notes:
   mode = Modes.normal
+  stack = []
 
   def __init__(self, root):
     self.settings = Settings()
@@ -86,9 +92,8 @@ class Notes:
   def load_file(self, file_name):
     self.settings.set_file(file_name)
     self.text.delete(0.0, END)
-    self.text.insert(END, self.settings.get_text())
+    self.text.insert(END, self.settings.get_file_data())
     self.set_title(file_name)
-
 
   # Shows the textbox prompt.
   def prompt_user(self):
@@ -108,32 +113,47 @@ class Notes:
       os.remove(file_path)
 
     file_data = open(file_path, 'w')
-    print self.get_text()
     file_data.write(self.get_text())
+
+  def remove_all(self, text, remove):
+    for c in remove:
+      text = text.replace(c, "")
+    return text
+
+  def jump_in(self):
+    row = int((self.text.index("insert")).split(".")[0]) - 1
+    content = self.get_text().split("\n")[row]
+
+    content = content[:15]
+    content = content.replace(" ", "_")
+    file_name = self.remove_all(content, "!@#$%^&*(<>,.?/:\"';'[]{}|\\")
+
+    assert file_name != ""
+
+    self.stack.append(self.settings.get_file())
+    self.load_file(file_name)
+
+  def jump_out(self):
+    self.load_file(self.stack.pop())
 	
   def change_text(self, event):
     key = -1
-    
-    print inspect(event)
 
     if len(event.char) > 0:
       key = ord(event.char)
 
-    print key
+    # print key
     if key == 6: # C-F
       self.prompt_user()
     elif key == 17: # C-Q
       self.close_event()
       self.root.destroy() #TODO: Put elsewhere.
+    elif key == 10: # C-J Jump into
+      self.jump_in()
+    elif key == 15: # C-O Jump Out
+      self.jump_out()
     else:
       self.save_note()
-
-    """
-    print event
-    print dir(event)
-    print ord(event.char)
-    print self.text.get(1.0, END)
-    """
 
   def close_event(self):
     self.settings.save()
