@@ -8,11 +8,11 @@ Commands
 
 Notatistic uses a stack-like system to track your notes. When you Jump into a topic, you push it on the stack. When you Jump Out, you pop it off the stack and are now looking at the new top-most note.
 
-**Ctrl-J:** *J*ump into the topic your cursor is on. 
+**Ctrl-J:** *J* ump into the topic your cursor is on. 
 
-**Ctrl-O:** Jump *O*ut of a topic. 
+**Ctrl-U:** Jump *U* p from a topic.
 
-**Ctrl-Q:** *Q*uit Notatistic. So sad to see you go.
+**Ctrl-Q:** *Q* uit Notatistic. So sad to see you go.
 
 
 Setup

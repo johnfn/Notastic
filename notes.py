@@ -2,6 +2,7 @@
 
 # TODO: Start at top of file.
 #   TODO: Even better, remember cursor position, like a true stack!
+# TODO: Nicer gui
 # NICE: display of current stack
 
 from Tkinter import *
@@ -51,7 +52,8 @@ class Settings:
     if not os.path.exists(file_name):
       open(file_name, "w").close() # Make an empty file
 
-    return "\n".join([line[:-1] for line in open(file_name, 'rw')])
+    contents =  "\n".join([line[:-1] for line in open(file_name, 'rw')])
+    return contents
 
   def get_file(self):
     return self.internal.current_file
@@ -95,7 +97,9 @@ class Notes:
     self.settings.set_file(file_name)
     self.text.delete(0.0, END)
     self.text.insert(END, self.settings.get_file_data())
-    self.text.mark_set("insert", "%d.%d" % (0, 0))
+    print "===="
+    print self.settings.get_file_data()
+    self.text.mark_set("insert", "1.0+%d chars" % 0)
     self.set_title(file_name)
 
   # Shows the textbox prompt.
@@ -145,15 +149,16 @@ class Notes:
     if len(event.char) > 0:
       key = ord(event.char)
 
-    # print key
+    print key
+
     if key == 6: # C-F
       self.prompt_user()
-    elif key == 17: # C-Q
+    elif key == 17: # C-Q Quit
       self.close_event()
       self.root.destroy() #TODO: Put elsewhere.
-    elif key == 10: # C-J Jump into
+    elif key == 10: # C-J Jump in
       self.jump_in()
-    elif key == 15: # C-O Jump Out
+    elif key == 21: # C-U Jump Up
       self.jump_out()
     else:
       self.save_note()
