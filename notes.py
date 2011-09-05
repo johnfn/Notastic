@@ -1,14 +1,15 @@
 #!/usr/bin/python
 
-# TODO: Start at top of file, not bottom. 
+# TODO: Start at top of file.
+#   TODO: Even better, remember cursor position, like a true stack!
 # NICE: display of current stack
 
 from Tkinter import *
 import os.path
 import pickle
-import os
+import sys
 
-DIR = os.getcwd() + "/"
+DIR = sys.path[0] + "/"
 
 def inspect(obj):
   """Inspects an object. Prints out all internal properties. Not recursive."""
@@ -94,6 +95,7 @@ class Notes:
     self.settings.set_file(file_name)
     self.text.delete(0.0, END)
     self.text.insert(END, self.settings.get_file_data())
+    self.text.mark_set("insert", "%d.%d" % (0, 0))
     self.set_title(file_name)
 
   # Shows the textbox prompt.
@@ -159,7 +161,7 @@ class Notes:
   def close_event(self):
     self.settings.save()
     self.save_note()
-    print "Closing."
+    print "Bye!"
 
   def txtfr(self, frame):
     #define a new frame and put a text area in it
