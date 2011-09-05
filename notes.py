@@ -6,8 +6,9 @@
 from Tkinter import *
 import os.path
 import pickle
+import os
 
-DIR = "/home/grant/notes/"
+DIR = os.getcwd() + "/"
 
 def inspect(obj):
   """Inspects an object. Prints out all internal properties. Not recursive."""
