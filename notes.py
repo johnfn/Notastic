@@ -113,7 +113,7 @@ class Notes:
     return self.text.get(1.0, END)
 
   def set_title(self, new_title):
-    self.root.wm_title("Notatistic - %s" % new_title)
+    self.root.wm_title("Notastic |   %s" % " > ".join(self.stack + [self.settings.get_file()]))
 
   def save_note(self):
     file_path = DIR + self.settings.get_file()
@@ -211,6 +211,8 @@ class Notes:
 
 def main():
   root = Tk()
+  root.tk_strictMotif()
+
   s=Notes(root)
 
   def call_close():
