@@ -9,8 +9,10 @@ from Tkinter import *
 import os.path
 import pickle
 import sys
+import tkFont
 
 DIR = sys.path[0] + "/"
+PID_FILE = DIR + ".pid"
 
 def inspect(obj):
   """Inspects an object. Prints out all internal properties. Not recursive."""
@@ -92,13 +94,12 @@ class Notes:
     self.text.focus_set()
 
     self.load_file(self.settings.get_file())
+    self.frame=frame
 
   def load_file(self, file_name):
     self.settings.set_file(file_name)
     self.text.delete(0.0, END)
     self.text.insert(END, self.settings.get_file_data())
-    print "===="
-    print self.settings.get_file_data()
     self.text.mark_set("insert", "1.0+%d chars" % 0)
     self.set_title(file_name)
 
@@ -169,9 +170,11 @@ class Notes:
     print "Bye!"
 
   def txtfr(self, frame):
+    self.customFont = tkFont.Font(family="Helvetica", size=12)
+
     #define a new frame and put a text area in it
     textfr=Frame(frame)
-    self.text=Text(textfr,height=10,width=50,background='white')
+    self.text=Text(textfr,height=20,width=80,background='white', font=self.customFont)
     self.text.bind("<Key>", self.change_text)
     # put a scroll bar in the frame
     scroll=Scrollbar(textfr)
@@ -186,6 +189,26 @@ class Notes:
     self.input_txt.pack()
     self.input_txt.pack_forget()
 
+    self.check_send_to_front()
+
+  def check_send_to_front(self):
+    f = open(PID_FILE, 'r')
+    contents = f.read()
+    f.close()
+
+    if contents != "":
+      open(PID_FILE, 'wa').close() 
+      print "zomg send to top"
+
+      self.root.iconify()
+      self.root.update()
+      self.root.deiconify()
+
+      self.root.lift()
+
+    self.root.after(1000, self.check_send_to_front)
+
+
 def main():
   root = Tk()
   s=Notes(root)
@@ -196,4 +219,17 @@ def main():
 
   root.protocol("WM_DELETE_WINDOW", call_close)
   root.mainloop()
-main()
+
+if os.path.exists(PID_FILE):
+  print "Already running"
+  f = open(PID_FILE, 'w')
+  f.write("bringup")
+  f.close()
+  exit(0)
+
+open(PID_FILE, 'wa').close() # touch PID_FILE
+
+try:
+  main()
+finally:
+  os.remove(PID_FILE)
